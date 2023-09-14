@@ -6,7 +6,6 @@ description: Learn how to use the ASP.NET Core Persist Component State Tag Helpe
 monikerRange: '>= aspnetcore-6.0'
 ms.custom: mvc
 ms.date: 07/16/2021
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: mvc/views/tag-helpers/builtin-th/persist-component-state-tag-helper
 ---
 # Persist Component State Tag Helper in ASP.NET Core
@@ -96,6 +95,20 @@ In the following example:
 ```
 
 For more information and a complete example, see <xref:blazor/components/prerendering-and-integration#persist-prerendered-state>.
+
+## Prerendered state size and SignalR message size limit
+
+*This section only applies to Blazor Server apps.*
+
+A large prerendered state size may exceed the SignalR circuit message size limit, which results in the following:
+
+* The SignalR circuit fails to initialize with an error on the client: :::no-loc text="Circuit host not initialized.":::
+* The reconnection dialog on the client appears when the circuit fails. Recovery isn't possible.
+
+To resolve the problem, use ***either*** of the following approaches:
+
+* Reduce the amount of data that you are putting into the prerendered state.
+* Increase the [SignalR message size limit](xref:blazor/fundamentals/signalr#circuit-handler-options-for-blazor-server-apps). ***WARNING***: Increasing the limit may increase the risk of Denial of service (DoS) attacks.
 
 ## Additional resources
 

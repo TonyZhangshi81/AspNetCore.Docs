@@ -6,7 +6,6 @@ monikerRange: '< aspnetcore-2.0'
 ms.author: riande
 ms.date: 09/22/2018
 ms.custom: "mvc, seodec18"
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: security/authentication/2fa
 ---
 # Two-factor authentication with SMS in ASP.NET Core
@@ -54,7 +53,7 @@ We will later store this value with the secret-manager tool within the key `SMSA
 
 We'll use the [Options pattern](xref:fundamentals/configuration/options) to access the user account and key settings.
 
-* Create a class to fetch the secure SMS key. For this sample, the `SMSoptions` class is created in the *Services/SMSoptions.cs* file.
+* Create a class to fetch the secure SMS key. For this sample, the `SMSoptions` class is created in the `Services/SMSoptions.cs` file.
 
 [!code-csharp[](2fa/sample/Web2FA/Services/SMSoptions.cs)]
 
@@ -75,7 +74,7 @@ info: Successfully saved SMSAccountIdentification = 12345 to the secret store.
 
 `Install-Package ASPSMS`
 
-* Add code in the *Services/MessageServices.cs* file to enable SMS. Use either the Twilio or the ASPSMS section:
+* Add code in the `Services/MessageServices.cs` file to enable SMS. Use either the Twilio or the ASPSMS section:
 
 **Twilio:**  
 [!code-csharp[](2fa/sample/Web2FA/Services/MessageServices_twilio.cs)]
@@ -85,13 +84,13 @@ info: Successfully saved SMSAccountIdentification = 12345 to the secret store.
 
 ### Configure startup to use `SMSoptions`
 
-Add `SMSoptions` to the service container in the `ConfigureServices` method in the *Startup.cs*:
+Add `SMSoptions` to the service container in the `ConfigureServices` method in the `Startup.cs`:
 
 [!code-csharp[](2fa/sample/Web2FA/Startup.cs?name=snippet1&highlight=4)]
 
 ### Enable two-factor authentication
 
-Open the *Views/Manage/Index.cshtml* Razor view file and remove the comment characters (so no markup is commented out).
+Open the `Views/Manage/Index.cshtml` Razor view file and remove the comment characters (so no markup is commented out).
 
 ## Log in with two-factor authentication
 
@@ -127,7 +126,7 @@ If you don't get a text message, see twilio log page.
 
 * Log in.
 
-* The user account has enabled two-factor authentication, so you have to provide the second factor of authentication . In this tutorial you have enabled phone verification. The built in templates also allow you to set up email as the second factor. You can set up additional second factors for authentication such as QR codes. Tap **Submit**.
+* The user account has enabled two-factor authentication, so you have to provide the second factor of authentication. In this tutorial you have enabled phone verification. The built in templates also allow you to set up email as the second factor. You can set up additional second factors for authentication such as QR codes. Tap **Submit**.
 
 ![Send Verification Code view](2fa/_static/login2fa7.png)
 
@@ -139,11 +138,11 @@ If you don't get a text message, see twilio log page.
 
 ## Account lockout for protecting against brute force attacks
 
-Account lockout is recommended with 2FA. Once a user signs in through a local account or social account, each failed attempt at 2FA is stored. If the maximum failed access attempts is reached, the user is locked out (default: 5 minute lockout after 5 failed access attempts). A successful authentication resets the failed access attempts count and resets the clock. The maximum failed access attempts and lockout time can be set with [MaxFailedAccessAttempts](/dotnet/api/microsoft.aspnetcore.identity.lockoutoptions.maxfailedaccessattempts) and [DefaultLockoutTimeSpan](/dotnet/api/microsoft.aspnetcore.identity.lockoutoptions.defaultlockouttimespan). The following configures account lockout for 10 minutes after 10 failed access attempts:
+Account lockout is recommended with 2FA. Once a user signs in through a local account or social account, each failed attempt at 2FA is stored. If the maximum failed access attempts is reached, the user is locked out (default: 5 minute lockout after 5 failed access attempts). A successful authentication resets the failed access attempts count and resets the clock. The maximum failed access attempts and lockout time can be set with <xref:Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts%2A> and <xref:Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan%2A>. The following configures account lockout for 10 minutes after 10 failed access attempts:
 
 [!code-csharp[](2fa/sample/Web2FA/Startup.cs?name=snippet2&highlight=13-17)]
 
-Confirm that [PasswordSignInAsync](/dotnet/api/microsoft.aspnetcore.identity.signinmanager-1.passwordsigninasync) sets `lockoutOnFailure` to `true`:
+Confirm that <xref:Microsoft.AspNetCore.Identity.SignInManager%601.PasswordSignInAsync%2A> sets `lockoutOnFailure` to `true`:
 
 ```csharp
 var result = await _signInManager.PasswordSignInAsync(

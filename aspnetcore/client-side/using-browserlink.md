@@ -4,21 +4,25 @@ author: ncarandini
 description: Explains how Browser Link is a Visual Studio feature that links the development environment with one or more web browsers.
 ms.author: riande
 ms.custom: H1Hack27Feb2017
-ms.date: 01/09/2020
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
+ms.date: 07/11/2022
 uid: client-side/using-browserlink
 ---
 # Browser Link in ASP.NET Core
 
-By [Nicolò Carandini](https://github.com/ncarandini), [Mike Wasson](https://github.com/MikeWasson), and [Tom Dykstra](https://github.com/tdykstra)
+By [Nicolò Carandini](https://github.com/ncarandini) and [Tom Dykstra](https://github.com/tdykstra)
 
-Browser Link is a Visual Studio feature. It creates a communication channel between the development environment and one or more web browsers. You can use Browser Link to refresh your web app in several browsers at once, which is useful for cross-browser testing.
+Browser Link is a Visual Studio feature. It creates a communication channel between the development environment and one or more web browsers. Use Browser Link to:
+
+* Refresh your web app in several browsers at once.
+* Test across multiple browsers with specific settings such as screen sizes.
+* Select UI elements in browsers in real-time, see what markup and source it's correlated to in Visual Studio.
+* Conduct real-time browser test automation. Browser Link is also extensible.
 
 ## Browser Link setup
 
 :::moniker range=">= aspnetcore-3.0"
 
-Add the [Microsoft.VisualStudio.Web.BrowserLink](https://www.nuget.org/packages/Microsoft.VisualStudio.Web.BrowserLink/) package to your project. For ASP.NET Core Razor Pages or MVC projects, also enable runtime compilation of Razor (*.cshtml*) files as described in <xref:mvc/views/view-compilation>. Razor syntax changes are applied only when runtime compilation has been enabled.
+Add the [Microsoft.VisualStudio.Web.BrowserLink](https://www.nuget.org/packages/Microsoft.VisualStudio.Web.BrowserLink/) package to your project. For ASP.NET Core Razor Pages or MVC projects, also enable runtime compilation of Razor (`.cshtml`) files as described in <xref:mvc/views/view-compilation>. Razor syntax changes are applied only when runtime compilation has been enabled.
 
 :::moniker-end
 
@@ -93,7 +97,7 @@ Hover over the Browser Link toolbar control to see the browsers that are connect
 
 Change the Index view, and all connected browsers are updated when you click the Browser Link refresh button:
 
-![browsers-sync-to-changes](using-browserlink/_static/browsers-sync-to-changes.png)
+![Browsers sync to changes](using-browserlink/_static/browsers-sync-to-changes.png)
 
 Browser Link also works with browsers that you launch from outside Visual Studio and navigate to the app URL.
 
@@ -105,11 +109,11 @@ Open the **Browser Link Dashboard** window from the Browser Link drop down menu 
 
 If no browser is connected, you can start a non-debugging session by selecting the **View in Browser** link:
 
-![browserlink-dashboard-no-connections](using-browserlink/_static/browserlink-dashboard-no-connections.png)
+![Browserlink dashboard no connections](using-browserlink/_static/browserlink-dashboard-no-connections.png)
 
 Otherwise, the connected browsers are shown with the path to the page that each browser is showing:
 
-![browserlink-dashboard-two-connections](using-browserlink/_static/browserlink-dashboard-two-connections.png)
+![Browserlink dashboard two connections](using-browserlink/_static/browserlink-dashboard-two-connections.png)
 
 You can also click on an individual browser name to refresh only that browser.
 

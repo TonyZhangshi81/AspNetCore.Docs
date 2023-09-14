@@ -41,7 +41,6 @@
       },
       "ms.technology": {
         "**/client-side/**/**.md": "aspnetcore-clientside",
-        "**/blazor/**/**.md": "aspnetcore-blazor",
         "**/data/**/**.md": "aspnetcore-data",
         "**/fundamentals/**/**.md": "aspnetcore-fundamentals",
         "**/getting-started/**/**.md": "aspnetcore-getstarted",
@@ -59,11 +58,16 @@
         "**/test/**/**.md": "aspnetcore-test",
         "**/tutorials/**/**.md": "aspnetcore-tutorials",
         "**/web-api/**/**.md": "aspnetcore-webapi",
-        "whats-new/**/**.md": "aspnetcore-whatsnew"
+        "whats-new/**/**.md": "aspnetcore-whatsnew",
+        "**/blazor/**/**.md": "aspnetcore-blazor",
+        "**/blazor/hybrid/**/**.md": "aspnetcore-blazorhybrid"
       },
       "ms.topic": {
         "**/getting-started/**/**.md": "tutorial",
         "**/tutorials/**/**.md": "tutorial"
+      },
+      "no-loc": {
+        "**/**.md": [ "Blazor", "Blazor Hybrid", "Blazor Server", "Blazor WebAssembly", "BREACH", "cookie", "Cookie", "CRIME", "EF Core", "Home" , "global.json", "Identity", "JS", "Kestrel", ".NET MAUI", ".NET Multi-platform App UI", "Privacy" , "Razor", "REST", "SignalR", "Web View"  ]
       },
       "recommendations": {
         "**/tutorials/**/**.md": "false"

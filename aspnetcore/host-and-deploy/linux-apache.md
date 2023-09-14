@@ -6,7 +6,6 @@ monikerRange: '>= aspnetcore-2.1'
 ms.author: shboyer
 ms.custom: mvc
 ms.date: 04/10/2020
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: host-and-deploy/linux-apache
 ---
 # Host ASP.NET Core on Linux with Apache
@@ -148,7 +147,7 @@ Create a configuration file, named *helloapp.conf*, for the app:
 
 ```
 <VirtualHost *:*>
-    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}s
 </VirtualHost>
 
 <VirtualHost *:80>
@@ -157,11 +156,20 @@ Create a configuration file, named *helloapp.conf*, for the app:
     ProxyPassReverse / http://127.0.0.1:5000/
     ServerName www.example.com
     ServerAlias *.example.com
-    ErrorLog ${APACHE_LOG_DIR}helloapp-error.log
-    CustomLog ${APACHE_LOG_DIR}helloapp-access.log common
+    ErrorLog ${APACHE_LOG_DIR}/helloapp-error.log
+    CustomLog ${APACHE_LOG_DIR}/helloapp-access.log common
 </VirtualHost>
 ```
 
+Note: Apache versions before 2.4.6 don't require the `RequestHeader set` contain the trailing `s`:
+
+```
+<VirtualHost *:*>
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+</VirtualHost>
+```
+
+For more information, see `%{VARNAME}s` in [Apache Module mod_headers](https://httpd.apache.org/docs/2.4/mod/mod_headers.html).
 :::moniker range=">= aspnetcore-5.0"
 
 The `VirtualHost` block can appear multiple times, in one or more files on a server. In the preceding configuration file, Apache accepts public traffic on port 80. The domain `www.example.com` is being served, and the `*.example.com` alias resolves to the same website. For more information, see [Name-based virtual host support](https://httpd.apache.org/docs/current/vhosts/name-based.html). Requests are proxied at the root to port 5000 of the server at 127.0.0.1. For bi-directional communication, `ProxyPass` and `ProxyPassReverse` are required. To change Kestrel's IP/port, see [Kestrel: Endpoint configuration](xref:fundamentals/servers/kestrel/endpoints).
@@ -181,7 +189,7 @@ sudo ln -s /etc/apache2/sites-available/helloapp.conf /etc/apache2/sites-enabled
 :::moniker-end
 
 > [!WARNING]
-> Failure to specify a proper [ServerName directive](https://httpd.apache.org/docs/current/mod/core.html#servername) in the **VirtualHost** block exposes your app to security vulnerabilities. Subdomain wildcard binding (for example, `*.example.com`) doesn't pose this security risk if you control the entire parent domain (as opposed to `*.com`, which is vulnerable). For more information, see [rfc7230 section-5.4](https://tools.ietf.org/html/rfc7230#section-5.4).
+> Failure to specify a proper [ServerName directive](https://httpd.apache.org/docs/current/mod/core.html#servername) in the **VirtualHost** block exposes your app to security vulnerabilities. Subdomain wildcard binding (for example, `*.example.com`) doesn't pose this security risk if you control the entire parent domain (as opposed to `*.com`, which is vulnerable). For more information, see [RFC 9110: HTTP Semantics (Section 7.2: Host and :authority)](https://www.rfc-editor.org/rfc/rfc9110#field.host).
 
 Logging can be configured per `VirtualHost` using `ErrorLog` and `CustomLog` directives. `ErrorLog` is the location where the server logs errors, and `CustomLog` sets the filename and format of log file. In this case, this is where request information is logged. There's one line for each request.
 
@@ -197,6 +205,8 @@ Restart Apache:
 sudo systemctl restart httpd
 sudo systemctl enable httpd
 ```
+
+For more information on header directive values, see [Apache Module mod_headers](https://httpd.apache.org/docs/2.4/mod/mod_headers.html).
 
 ## Monitor the app
 
@@ -362,7 +372,7 @@ rich rules:
 
 **Configure the app for secure (HTTPS) local connections**
 
-The [dotnet run](/dotnet/core/tools/dotnet-run) command uses the app's *Properties/launchSettings.json* file, which configures the app to listen on the URLs provided by the `applicationUrl` property (for example, `https://localhost:5001;http://localhost:5000`).
+The [dotnet run](/dotnet/core/tools/dotnet-run) command uses the app's `Properties/launchSettings.json` file, which configures the app to listen on the URLs provided by the `applicationUrl` property (for example, `https://localhost:5001;http://localhost:5000`).
 
 Configure the app to use a certificate in development for the `dotnet run` command or development environment (F5 or Ctrl+F5 in Visual Studio Code) using one of the following approaches:
 
@@ -562,7 +572,7 @@ The example file limits bandwidth as 600 KB/sec under the root location:
 
 ### Long request header fields
 
-Proxy server default settings typically limit request header fields to 8,190 bytes. An app may require fields longer than the default (for example, apps that use [Azure Active Directory](https://azure.microsoft.com/services/active-directory/)). If longer fields are required, the proxy server's [LimitRequestFieldSize](https://httpd.apache.org/docs/2.4/mod/core.html#LimitRequestFieldSize) directive requires adjustment. The value to apply depends on the scenario. For more information, see your server's documentation.
+Proxy server default settings typically limit request header fields to 8,190 bytes. An app may require fields longer than the default (for example, apps that use [Microsoft Entra ID](https://azure.microsoft.com/services/active-directory/)). If longer fields are required, the proxy server's [LimitRequestFieldSize](https://httpd.apache.org/docs/2.4/mod/core.html#LimitRequestFieldSize) directive requires adjustment. The value to apply depends on the scenario. For more information, see your server's documentation.
 
 > [!WARNING]
 > Don't increase the default value of `LimitRequestFieldSize` unless necessary. Increasing the value increases the risk of buffer overrun (overflow) and Denial of Service (DoS) attacks by malicious users.

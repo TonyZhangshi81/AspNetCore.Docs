@@ -5,7 +5,6 @@ description: Learn how to use Visual Studio tooling and Docker for Windows to co
 ms.author: scaddie
 ms.custom: mvc
 ms.date: 09/12/2018
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: host-and-deploy/docker/visual-studio-tools-for-docker
 ---
 # Visual Studio Container Tools with ASP.NET Core
@@ -17,7 +16,7 @@ Visual Studio 2017 and later versions support building, debugging, and running c
 ## Prerequisites
 
 * [Docker for Windows](https://docs.docker.com/desktop/windows/install/)
-* [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/?utm_medium=microsoft&utm_source=docs.microsoft.com&utm_campaign=inline+link&utm_content=download+vs2019) with the **.NET Core cross-platform development** workload
+* [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/?utm_medium=microsoft&utm_source=learn.microsoft.com&utm_campaign=inline+link&utm_content=download+vs2019) with the **.NET Core cross-platform development** workload
 
 ## Installation and setup
 
@@ -83,7 +82,7 @@ Visual Studio 2017 versions 15.8 or later add an orchestration solution only whe
 
 * [Docker Compose](#docker-compose)
 * [Service Fabric](#service-fabric)
-* [Kubernetes/Helm ](https://helm.sh/)
+* [Kubernetes/Helm](https://helm.sh/)
 
 ### Docker Compose
 
@@ -124,7 +123,7 @@ The Visual Studio Container Tools do the following tasks:
 
     [!code-dockerfile[](visual-studio-tools-for-docker/samples/2.1/HelloDockerTools/Dockerfile)]
 
-* Adds an `<IsServiceFabricServiceProject>` element to the ASP.NET Core project's *.csproj* file:
+* Adds an `<IsServiceFabricServiceProject>` element to the ASP.NET Core project's `.csproj` file:
 
     [!code-xml[](visual-studio-tools-for-docker/samples/2.1/HelloDockerTools/HelloDockerTools.csproj?name=snippet_IsServiceFabricServiceProject)]
 
@@ -238,3 +237,4 @@ There may be an expectation for the production or release image to be smaller in
 * [Troubleshoot Visual Studio development with Docker](/azure/vs-azure-tools-docker-troubleshooting-docker-errors)
 * [Visual Studio Container Tools GitHub repository](https://github.com/Microsoft/DockerTools)
 * [GC using Docker and small containers](xref:performance/memory#sc)
+* [System.IO.IOException: The configured user limit (128) on the number of inotify instances has been reached](xref:host-and-deploy/docker/index#d128)

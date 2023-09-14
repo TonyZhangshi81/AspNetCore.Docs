@@ -4,7 +4,7 @@ author: shirhatti
 description: Learn how to gather diagnostics from Kestrel.
 monikerRange: '>= aspnetcore-6.0'
 ms.author: riande
-ms.date: 07/01/2021
+ms.date: 01/26/2023
 uid: fundamentals/servers/kestrel/diagnostics
 ---
 
@@ -20,7 +20,7 @@ This article provides guidance for gathering diagnostics from Kestrel to help tr
 
 ## Logging
 
-Like most components in ASP.NET Core, Kestrel uses `Microsoft.Extensions.Logging` to emit log information. Kestrel employs the use of multiple [categories](xref:fundamentals/logging/index#log-category-1) which allows you to be selective on which logs you listen to.
+Like most components in ASP.NET Core, Kestrel uses `Microsoft.Extensions.Logging` to emit log information. Kestrel employs the use of multiple [categories](xref:fundamentals/logging/index#log-category) which allows you to be selective on which logs you listen to.
 
 | Logging Category Name | Logging Events |
 |--|--|
@@ -113,3 +113,7 @@ using var badRequestListener = new BadRequestEventListener(diagnosticSource, (ba
 app.MapGet("/", () => "Hello world");
 app.Run();
 ```
+
+## Behavior with debugger attached
+
+Certain timeouts and rate limits aren't enforced when a debugger is attached to a Kestrel process. For more information, see [Behavior with debugger attached](xref:fundamentals/servers/kestrel#behavior-with-debugger-attached).

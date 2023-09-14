@@ -6,7 +6,6 @@ monikerRange: '>= aspnetcore-3.1'
 ms.author: riande
 ms.custom: mvc
 ms.date: 11/17/2021
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: security/authentication/scaffold-identity
 ---
 # Scaffold Identity in ASP.NET Core projects
@@ -122,13 +121,13 @@ dotnet ef database update
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg.md)]
 
-Optional: Add the login partial (`_LoginPartial`) to the *Views/Shared/_Layout.cshtml* file:
+Optional: Add the login partial (`_LoginPartial`) to the `Views/Shared/_Layout.cshtml` file:
 
 [!code-cshtml[](scaffold-identity/6.0sample/_Layout.cshtml?highlight=29)]
 
 [!INCLUDE[](~/includes/scaffold-identity/migrations.md)]
 
-Add `MapRazorPages` to *Program.cs* as shown in the following highlighted code:
+Add `MapRazorPages` to `Program.cs` as shown in the following highlighted code:
 
 [!code-cshtml[](scaffold-identity/6.0sample/ProgramMRP.cs?highlight=39)]
 
@@ -146,7 +145,7 @@ dotnet aspnet-codegenerator identity -dc MvcAuth.Data.ApplicationDbContext  --fi
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg-auth.md)]
 
-## Scaffold Identity into a Blazor Server project
+## Scaffold Identity into a server-side Blazor app with authorization
 
 [!INCLUDE[](~/includes/scaffold-identity/install-pkg.md)]
 
@@ -156,175 +155,39 @@ dotnet aspnet-codegenerator identity -dc MvcAuth.Data.ApplicationDbContext  --fi
 
 [!INCLUDE[](~/includes/scaffold-identity/migrations.md)]
 
-### Pass an XSRF token to the app
-
-Tokens can be passed to components:
-
-* When authentication tokens are provisioned and saved to the authentication cookie, they can be passed to components.
-* Razor components can't use `HttpContext` directly, so there's no way to obtain an [anti-request forgery (XSRF) token](xref:security/anti-request-forgery) to POST to Identity's logout endpoint at `/Identity/Account/Logout`. An XSRF token can be passed to components.
-
-For more information, see <xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app>.
-
-In the `Pages/_Host.cshtml` file, establish the token after adding it to the `InitialApplicationState` and `TokenProvider` classes:
-
-```csharp
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
-
-...
-
-var tokens = new InitialApplicationState
-{
-    ...
-
-    XsrfToken = Xsrf.GetAndStoreTokens(HttpContext).RequestToken
-};
-```
-
-Update the `App` component (`App.razor`) to assign the `InitialState.XsrfToken`:
-
-```csharp
-@inject TokenProvider TokenProvider
-
-...
-
-TokenProvider.XsrfToken = InitialState.XsrfToken;
-```
-
-The `TokenProvider` service demonstrated in the topic is used in the `LoginDisplay` component in the following [Layout and authentication flow changes](#layout-and-authentication-flow-changes) section.
-
-### Register the token provider service
-
-If using a [token provider service](xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app), register the service in `Program.cs`:
-
-```csharp
-builder.Services.AddScoped<TokenProvider>();
-```
-
-### Layout and authentication flow changes
-
-Add a `RedirectToLogin` component (`RedirectToLogin.razor`) to the app's `Shared` folder in the project root:
-
-```razor
-@inject NavigationManager Navigation
-@code {
-    protected override void OnInitialized()
-    {
-        Navigation.NavigateTo("Identity/Account/Login?returnUrl=" +
-            Uri.EscapeDataString(Navigation.Uri), true);
-    }
-}
-```
-
-Add a `LoginDisplay` component (`LoginDisplay.razor`) to the app's `Shared` folder. A [token provider service](xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app), `TokenProvider` in the following example, provides the XSRF token for the HTML form that POSTs to Identity's logout endpoint:
-
-```razor
-@using Microsoft.AspNetCore.Components.Authorization
-@inject NavigationManager Navigation
-@inject TokenProvider TokenProvider
-
-<AuthorizeView>
-    <Authorized>
-        <a href="Identity/Account/Manage/Index">
-            Hello, @context.User.Identity.Name!
-        </a>
-        <form action="/Identity/Account/Logout?returnUrl=%2F" method="post">
-            <button class="nav-link btn btn-link" type="submit">Logout</button>
-            <input name="__RequestVerificationToken" type="hidden" 
-                value="@TokenProvider.XsrfToken">
-        </form>
-    </Authorized>
-    <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Login</a>
-    </NotAuthorized>
-</AuthorizeView>
-```
-
-In the `MainLayout` component (`Shared/MainLayout.razor`), add the `LoginDisplay` component to the top-row `<div>` element's content:
-
-```razor
-<div class="top-row px-4 auth">
-    <LoginDisplay />
-    <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-</div>
-```
-
 ### Style authentication endpoints
 
-Because Blazor Server uses Razor Pages Identity pages, the styling of the UI changes when a visitor navigates between Identity pages and components. You have two options to address the incongruous styles:
+Because server-side Blazor apps use Razor Pages Identity pages, the styling of the UI changes when a visitor navigates between Identity pages and components. You have two options to address the incongruous styles:
 
-#### Build Identity components
+* [Custom Identity components](#custom-identity-components)
+* [Use a custom layout with Blazor app styles](#use-a-custom-layout-with-blazor-app-styles)
 
-An approach to using components for Identity instead of pages is to build Identity components. Because `SignInManager` and `UserManager` aren't supported in Razor components, use API endpoints in the Blazor Server app to process user account actions.
+#### Custom Identity components
+
+ASP.NET Core Identity is designed to work in the context of HTTP request and response communication, which isn't the primary client-server communication model in Blazor apps. ASP.NET Core apps that use ASP.NET Core Identity for user management should use Razor Pages instead of Razor components for Identity-related UI, such as user registration, login, logout, and other user management tasks.
+
+Because <xref:Microsoft.AspNetCore.Identity.SignInManager%601> and <xref:Microsoft.AspNetCore.Identity.UserManager%601> aren't supported in Razor components, we recommend using web API to manage Identity actions from Razor components via a server-side Identity-enabled ASP.NET Core app. For guidance on creating web APIs for Blazor apps, see <xref:blazor/call-web-api>.
+
+An approach to using Razor components for Identity instead of Razor pages is to build your own custom Identity Razor components, but Microsoft doesn't recommend or support the approach. For additional context, explore the following discussions. In the following discussions, code examples in issue comments and code examples cross-linked in non-Microsoft GitHub repositories aren't supported by Microsoft but might be helpful to some developers:
+
+* [Support Custom Login Component when using Identity (dotnet/aspnetcore #13601)](https://github.com/dotnet/aspnetcore/issues/13601)
+* [Reiteration on the `SigninManager<T>` not being supported in Razor Components (dotnet/aspnetcore #34095)](https://github.com/dotnet/aspnetcore/issues/34095)
+* [There is no info on how to actually implement custom login form for server-side blazor (dotnet/AspNetCore.Docs #16813)](https://github.com/dotnet/AspNetCore.Docs/issues/16813)
+
+For additional assistance when seeking to build custom Identity Razor components or searching for third-party Razor components, we recommend the following resources:
+
+* [Stack Overflow (tag: `blazor`)](https://stackoverflow.com/questions/tagged/blazor) (Public support forum)
+* [ASP.NET Core Slack Team](https://join.slack.com/t/aspnetcore/shared_invite/zt-1mv5487zb-EOZxJ1iqb0A0ajowEbxByQ) (Public support chat)
+* [Blazor Gitter](https://gitter.im/aspnet/Blazor) (Public support chat)
+* [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor) (Links to community-maintained Blazor resources)
 
 #### Use a custom layout with Blazor app styles
 
-The Identity pages layout and styles can be modified to produce pages that use the default Blazor theme.
+The Identity pages layout and styles can be modified to produce pages that use styles similar to the default Blazor theme. This approach isn't covered by the documentation.
 
-> [!NOTE]
-> The example in this section is merely a starting point for customization. Additional work is likely required for the best user experience.
+## Client-side Blazor apps
 
-Create a new `NavMenu_IdentityLayout` component (`Shared/NavMenu_IdentityLayout.razor`). For the markup and code of the component, use the same content of the app's `NavMenu` component (`Shared/NavMenu.razor`). Strip out any `NavLink`s to components that can't be reached anonymously because automatic redirects in the `RedirectToLogin` component fail for components requiring authentication or authorization.
-
-In the `Pages/Shared/Layout.cshtml` file, make the following changes:
-
-* Add Razor directives to the top of the file to use Tag Helpers and the app's components in the `Shared` folder:
-
-  ```cshtml
-  @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-  @using {APPLICATION ASSEMBLY}.Shared
-  ```
-
-  Replace `{APPLICATION ASSEMBLY}` with the app's assembly name.
-
-* Add a `<base>` tag and Blazor stylesheet `<link>` to the `<head>` content:
-
-  ```cshtml
-  <base href="~/" />
-  <link rel="stylesheet" href="~/css/site.css" />
-  ```
-
-* Change the content of the `<body>` tag to the following:
-
-  ```cshtml
-  <div class="sidebar" style="float:left">
-      <component type="typeof(NavMenu_IdentityLayout)" 
-          render-mode="ServerPrerendered" />
-  </div>
-
-  <div class="main" style="padding-left:250px">
-      <div class="top-row px-4">
-          @{
-              var result = Engine.FindView(ViewContext, "_LoginPartial", 
-                  isMainPage: false);
-          }
-          @if (result.Success)
-          {
-              await Html.RenderPartialAsync("_LoginPartial");
-          }
-          else
-          {
-              throw new InvalidOperationException("The default Identity UI " +
-                  "layout requires a partial view '_LoginPartial'.");
-          }
-          <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-      </div>
-
-      <div class="content px-4">
-          @RenderBody()
-      </div>
-  </div>
-
-  <script src="~/Identity/lib/jquery/dist/jquery.min.js"></script>
-  <script src="~/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="~/Identity/js/site.js" asp-append-version="true"></script>
-  @RenderSection("Scripts", required: false)
-  <script src="_framework/blazor.server.js"></script>
-  ```
-
-## Standalone or hosted Blazor WebAssembly apps
-
-Client-side Blazor WebAssembly apps use their own Identity UI approaches and can't use ASP.NET Core Identity scaffolding. Server-side ASP.NET Core apps of hosted Blazor solutions can follow the Razor Pages/MVC guidance in this article and are configured just like any other type of ASP.NET Core app that supports Identity.
+Client-side Blazor apps use their own Identity UI approaches and can't use ASP.NET Core Identity scaffolding. Server-side ASP.NET Core apps of hosted Blazor solutions can follow the Razor Pages/MVC guidance in this article and are configured just like any other type of ASP.NET Core app that supports Identity.
 
 The Blazor framework doesn't include Razor component versions of Identity UI pages. Identity UI Razor components can be custom built or obtained from unsupported third-party sources.
 
@@ -354,7 +217,7 @@ If <xref:Microsoft.AspNetCore.Identity.PasswordOptions> are configured in `Start
 
 ## Disable a page
 
-This sections show how to disable the register page but the approach can be used to disable any page.
+This section shows how to disable the register page but the approach can be used to disable any page.
 
 To disable user registration:
 
@@ -364,15 +227,15 @@ To disable user registration:
    dotnet aspnet-codegenerator identity -dc RPauth.Data.ApplicationDbContext --files "Account.Register;Account.Login;Account.RegisterConfirmation"
   ```
 
-* Update *Areas/Identity/Pages/Account/Register.cshtml.cs* so users can't register from this endpoint:
+* Update `Areas/Identity/Pages/Account/Register.cshtml.cs` so users can't register from this endpoint:
 
   [!code-csharp[](scaffold-identity/sample/Register.cshtml.cs?name=snippet)]
 
-* Update *Areas/Identity/Pages/Account/Register.cshtml* to be consistent with the preceding changes:
+* Update `Areas/Identity/Pages/Account/Register.cshtml` to be consistent with the preceding changes:
 
   [!code-cshtml[](scaffold-identity/sample/Register.cshtml)]
 
-* Comment out or remove the registration link from *Areas/Identity/Pages/Account/Login.cshtml*
+* Comment out or remove the registration link from `Areas/Identity/Pages/Account/Login.cshtml`
 
   ```cshtml
   @*
@@ -448,7 +311,7 @@ For example, `AddDbContext` and `AddDefaultIdentity` are commented out in the fo
 
 [!code-csharp[](scaffold-identity/3.1sample/StartupRemove.cs?name=snippet)]
 
-The preceding code comments out the code that is duplicated in *Areas/Identity/IdentityHostingStartup.cs*
+The preceding code comments out the code that is duplicated in `Areas/Identity/IdentityHostingStartup.cs`
 
 Typically, apps that were created with individual accounts should ***not*** create a new data context.
 
@@ -493,7 +356,7 @@ before dotnet ef database update
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg.md)]
 
-Identity is configured in *Areas/Identity/IdentityHostingStartup.cs*. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
+Identity is configured in `Areas/Identity/IdentityHostingStartup.cs`. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
 
 <a name="efm"></a>
 
@@ -532,7 +395,7 @@ dotnet aspnet-codegenerator identity -dc RPauth.Data.ApplicationDbContext --file
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg-auth.md)]
 
-Some Identity options are configured in *Areas/Identity/IdentityHostingStartup.cs*. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
+Some Identity options are configured in `Areas/Identity/IdentityHostingStartup.cs`. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
 
 ## Scaffold Identity into an MVC project without existing authorization
 
@@ -552,13 +415,13 @@ dotnet ef database update
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg.md)]
 
-Optional: Add the login partial (`_LoginPartial`) to the *Views/Shared/_Layout.cshtml* file:
+Optional: Add the login partial (`_LoginPartial`) to the `Views/Shared/_Layout.cshtml` file:
 
 [!code-cshtml[](scaffold-identity/3.1sample/_Layout.cshtml?highlight=20)]
 
-* Move the *Pages/Shared/_LoginPartial.cshtml* file to *Views/Shared/_LoginPartial.cshtml*
+* Move the `Pages/Shared/_LoginPartial.cshtml` file to `Views/Shared/_LoginPartial.cshtml`
 
-Identity is configured in *Areas/Identity/IdentityHostingStartup.cs*. For more information, see IHostingStartup.
+Identity is configured in `Areas/Identity/IdentityHostingStartup.cs`. For more information, see IHostingStartup.
 
 [!INCLUDE[](~/includes/scaffold-identity/migrations.md)]
 
@@ -580,197 +443,40 @@ dotnet aspnet-codegenerator identity -dc MvcAuth.Data.ApplicationDbContext  --fi
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg-auth.md)]
 
-## Scaffold Identity into a Blazor Server project without existing authorization
+## Scaffold Identity into a server-side Blazor app without existing authorization
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg.md)]
 
-Identity is configured in *Areas/Identity/IdentityHostingStartup.cs*. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
+Identity is configured in `Areas/Identity/IdentityHostingStartup.cs`. For more information, see [`IHostingStartup`](xref:fundamentals/configuration/platform-specific-configuration).
 
 ### Migrations
 
 [!INCLUDE[](~/includes/scaffold-identity/migrations.md)]
 
-### Pass an XSRF token to the app
-
-Tokens can be passed to components:
-
-* When authentication tokens are provisioned and saved to the authentication cookie, they can be passed to components.
-* Razor components can't use `HttpContext` directly, so there's no way to obtain an [anti-request forgery (XSRF) token](xref:security/anti-request-forgery) to POST to Identity's logout endpoint at `/Identity/Account/Logout`. An XSRF token can be passed to components.
-
-For more information, see <xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app>.
-
-In the *Pages/_Host.cshtml* file, establish the token after adding it to the `InitialApplicationState` and `TokenProvider` classes:
-
-```csharp
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
-
-...
-
-var tokens = new InitialApplicationState
-{
-    ...
-
-    XsrfToken = Xsrf.GetAndStoreTokens(HttpContext).RequestToken
-};
-```
-
-Update the `App` component (*App.razor*) to assign the `InitialState.XsrfToken`:
-
-```csharp
-@inject TokenProvider TokenProvider
-
-...
-
-TokenProvider.XsrfToken = InitialState.XsrfToken;
-```
-
-The `TokenProvider` service demonstrated in the topic is used in the `LoginDisplay` component in the following [Layout and authentication flow changes](#layout-and-authentication-flow-changes) section.
-
-### Enable authentication
-
-In the `Startup` class:
-
-* Confirm that Razor Pages services are added in `Startup.ConfigureServices`.
-* If using the [TokenProvider](xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app), register the service.
-* Call `UseDatabaseErrorPage` on the application builder in `Startup.Configure` for the Development environment.
-* Call `UseAuthentication` and `UseAuthorization` after `UseRouting`.
-* Add an endpoint for Razor Pages.
-
-[!code-csharp[](scaffold-identity/3.1sample/StartupBlazor.cs?highlight=3,6,14,27-28,32)]
-
-[!INCLUDE[](~/includes/scaffold-identity/hsts.md)]
-
-### Layout and authentication flow changes
-
-Add a `RedirectToLogin` component (*RedirectToLogin.razor*) to the app's *Shared* folder in the project root:
-
-```razor
-@inject NavigationManager Navigation
-@code {
-    protected override void OnInitialized()
-    {
-        Navigation.NavigateTo("Identity/Account/Login?returnUrl=" +
-            Uri.EscapeDataString(Navigation.Uri), true);
-    }
-}
-```
-
-Add a `LoginDisplay` component (*LoginDisplay.razor*) to the app's *Shared* folder. The [TokenProvider service](xref:blazor/security/server/additional-scenarios#pass-tokens-to-a-blazor-server-app) provides the XSRF token for the HTML form that POSTs to Identity's logout endpoint:
-
-```razor
-@using Microsoft.AspNetCore.Components.Authorization
-@inject NavigationManager Navigation
-@inject TokenProvider TokenProvider
-
-<AuthorizeView>
-    <Authorized>
-        <a href="Identity/Account/Manage/Index">
-            Hello, @context.User.Identity.Name!
-        </a>
-        <form action="/Identity/Account/Logout?returnUrl=%2F" method="post">
-            <button class="nav-link btn btn-link" type="submit">Logout</button>
-            <input name="__RequestVerificationToken" type="hidden" 
-                value="@TokenProvider.XsrfToken">
-        </form>
-    </Authorized>
-    <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Login</a>
-    </NotAuthorized>
-</AuthorizeView>
-```
-
-In the `MainLayout` component (*Shared/MainLayout.razor*), add the `LoginDisplay` component to the top-row `<div>` element's content:
-
-```razor
-<div class="top-row px-4 auth">
-    <LoginDisplay />
-    <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-</div>
-```
-
 ### Style authentication endpoints
 
-Because Blazor Server uses Razor Pages Identity pages, the styling of the UI changes when a visitor navigates between Identity pages and components. You have two options to address the incongruous styles:
+Because server-side Blazor apps use Razor Pages Identity pages, the styling of the UI changes when a visitor navigates between Identity pages and components. You have two options to address the incongruous styles:
 
-#### Build Identity components
+* [Custom Identity components](#custom-identity-components)
+* [Use a custom layout with Blazor app styles](#use-a-custom-layout-with-blazor-app-styles)
 
-An approach to using components for Identity instead of pages is to build Identity components. Because `SignInManager` and `UserManager` aren't supported in Razor components, use API endpoints in the Blazor Server app to process user account actions.
+#### Custom Identity components
+
+An approach to using components for Identity instead of pages is to build Identity components. Because `SignInManager` and `UserManager` aren't supported in Razor components, use web API endpoints in the Blazor app to process user account actions.
 
 #### Use a custom layout with Blazor app styles
 
-The Identity pages layout and styles can be modified to produce pages that use the default Blazor theme.
+The Identity pages layout and styles can be modified to produce pages that use styles similar to the default Blazor theme. This approach isn't covered by the documentation.
 
-> [!NOTE]
-> The example in this section is merely a starting point for customization. Additional work is likely required for the best user experience.
-
-Create a new `NavMenu_IdentityLayout` component (*Shared/NavMenu_IdentityLayout.razor*). For the markup and code of the component, use the same content of the app's `NavMenu` component (*Shared/NavMenu.razor*). Strip out any `NavLink`s to components that can't be reached anonymously because automatic redirects in the `RedirectToLogin` component fail for components requiring authentication or authorization.
-
-In the *Pages/Shared/Layout.cshtml* file, make the following changes:
-
-* Add Razor directives to the top of the file to use Tag Helpers and the app's components in the *Shared* folder:
-
-  ```cshtml
-  @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-  @using {APPLICATION ASSEMBLY}.Shared
-  ```
-
-  Replace `{APPLICATION ASSEMBLY}` with the app's assembly name.
-
-* Add a `<base>` tag and Blazor stylesheet `<link>` to the `<head>` content:
-
-  ```cshtml
-  <base href="~/" />
-  <link rel="stylesheet" href="~/css/site.css" />
-  ```
-
-* Change the content of the `<body>` tag to the following:
-
-  ```cshtml
-  <div class="sidebar" style="float:left">
-      <component type="typeof(NavMenu_IdentityLayout)" 
-          render-mode="ServerPrerendered" />
-  </div>
-
-  <div class="main" style="padding-left:250px">
-      <div class="top-row px-4">
-          @{
-              var result = Engine.FindView(ViewContext, "_LoginPartial", 
-                  isMainPage: false);
-          }
-          @if (result.Success)
-          {
-              await Html.RenderPartialAsync("_LoginPartial");
-          }
-          else
-          {
-              throw new InvalidOperationException("The default Identity UI " +
-                  "layout requires a partial view '_LoginPartial'.");
-          }
-          <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-      </div>
-
-      <div class="content px-4">
-          @RenderBody()
-      </div>
-  </div>
-
-  <script src="~/Identity/lib/jquery/dist/jquery.min.js"></script>
-  <script src="~/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="~/Identity/js/site.js" asp-append-version="true"></script>
-  @RenderSection("Scripts", required: false)
-  <script src="_framework/blazor.server.js"></script>
-  ```
-
-## Scaffold Identity into a Blazor Server project with authorization
+## Scaffold Identity into a server-side Blazor app with authorization
 
 [!INCLUDE[](~/includes/scaffold-identity/id-scaffold-dlg-auth.md)]
 
-Some Identity options are configured in *Areas/Identity/IdentityHostingStartup.cs*. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
+Some Identity options are configured in `Areas/Identity/IdentityHostingStartup.cs`. For more information, see [IHostingStartup](xref:fundamentals/configuration/platform-specific-configuration).
 
-## Standalone or hosted Blazor WebAssembly apps
+## Client-side Blazor apps
 
-Client-side Blazor WebAssembly apps use their own Identity UI approaches and can't use ASP.NET Core Identity scaffolding. Server-side ASP.NET Core apps of hosted Blazor solutions can follow the Razor Pages/MVC guidance in this article and are configured just like any other type of ASP.NET Core app that supports Identity.
+Client-side Blazor apps use their own Identity UI approaches and can't use ASP.NET Core Identity scaffolding. Server-side ASP.NET Core apps of hosted Blazor solutions can follow the Razor Pages/MVC guidance in this article and are configured just like any other type of ASP.NET Core app that supports Identity.
 
 The Blazor framework doesn't include Razor component versions of Identity UI pages. Identity UI Razor components can be custom built or obtained from unsupported third-party sources.
 
@@ -790,7 +496,7 @@ The default Identity is replaced in the following code:
 
 [!code-csharp[](scaffold-identity/sample/StartupFull.cs?name=snippet2)]
 
-The following code sets the [LoginPath](/dotnet/api/microsoft.aspnetcore.authentication.cookies.cookieauthenticationoptions.loginpath), [LogoutPath](/dotnet/api/microsoft.aspnetcore.authentication.cookies.cookieauthenticationoptions.logoutpath), and [AccessDeniedPath](/dotnet/api/microsoft.aspnetcore.authentication.cookies.cookieauthenticationoptions.accessdeniedpath):
+The following code sets the <xref:Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions.LoginPath%2A>, <xref:Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions.LogoutPath%2A>, and <xref:Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions.AccessDeniedPath%2A>):
 
 [!code-csharp[](scaffold-identity/sample/StartupFull.cs?name=snippet3)]
 
@@ -818,7 +524,7 @@ If <xref:Microsoft.AspNetCore.Identity.PasswordOptions> are configured in `Start
 
 ## Disable a page
 
-This sections show how to disable the register page but the approach can be used to disable any page.
+This section shows how to disable the register page but the approach can be used to disable any page.
 
 To disable user registration:
 
@@ -828,15 +534,15 @@ To disable user registration:
    dotnet aspnet-codegenerator identity -dc RPauth.Data.ApplicationDbContext --files "Account.Register;Account.Login;Account.RegisterConfirmation"
   ```
 
-* Update *Areas/Identity/Pages/Account/Register.cshtml.cs* so users can't register from this endpoint:
+* Update `Areas/Identity/Pages/Account/Register.cshtml.cs` so users can't register from this endpoint:
 
   [!code-csharp[](scaffold-identity/sample/Register.cshtml.cs?name=snippet)]
 
-* Update *Areas/Identity/Pages/Account/Register.cshtml* to be consistent with the preceding changes:
+* Update `Areas/Identity/Pages/Account/Register.cshtml` to be consistent with the preceding changes:
 
   [!code-cshtml[](scaffold-identity/sample/Register.cshtml)]
 
-* Comment out or remove the registration link from *Areas/Identity/Pages/Account/Login.cshtml*
+* Comment out or remove the registration link from `Areas/Identity/Pages/Account/Login.cshtml`
 
   ```cshtml
   @*

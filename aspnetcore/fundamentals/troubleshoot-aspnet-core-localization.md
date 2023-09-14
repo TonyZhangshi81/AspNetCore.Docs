@@ -4,7 +4,6 @@ author: hishamco
 description: Learn how to diagnose problems with localization in ASP.NET Core apps.
 ms.author: riande
 ms.date: 01/24/2019
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: fundamentals/troubleshoot-aspnet-core-localization
 ---
 # Troubleshoot ASP.NET Core Localization
@@ -49,7 +48,7 @@ _**Hint:** When using `CookieRequestCultureProvider`, verify single quotes are n
 
 ## Resources & Class Libraries issues
 
-ASP.NET Core by default provides a way to allow the class libraries to find their resource files via [ResourceLocationAttribute](/dotnet/api/microsoft.extensions.localization.resourcelocationattribute).
+ASP.NET Core by default provides a way to allow the class libraries to find their resource files via <xref:Microsoft.Extensions.Localization.ResourceLocationAttribute>.
 
 Common issues with class libraries include:
 - Missing the `ResourceLocationAttribute` in a class library will prevent `ResourceManagerStringLocalizerFactory` from discovering the resources.
@@ -64,7 +63,7 @@ The `RequestLocalizationOptions` class has three default providers:
 2. `CookieRequestCultureProvider`
 3. `AcceptLanguageHeaderRequestCultureProvider`
 
-The [CustomRequestCultureProvider](/dotnet/api/microsoft.aspnetcore.localization.customrequestcultureprovider) allows you to customize how the localization culture is provided in your app. The `CustomRequestCultureProvider` is used when the default providers don't meet your requirements.
+The <xref:Microsoft.AspNetCore.Localization.CustomRequestCultureProvider> allows you to customize how the localization culture is provided in your app. The `CustomRequestCultureProvider` is used when the default providers don't meet your requirements.
 
 - A common reason custom provider don't work properly is that it isn't the first provider in the `RequestCultureProviders` list. To resolve this issue:
 
@@ -94,7 +93,7 @@ options.AddInitialRequestCultureProvider(new CustomRequestCultureProvider(async 
 
 ## Root Namespace issues
 
-When the root namespace of an assembly is different than the assembly name, localization doesn't work by default. To avoid this issue use [RootNamespace](/dotnet/api/microsoft.extensions.localization.rootnamespaceattribute), which is described in detail [here](xref:fundamentals/localization#resource-file-naming)
+When the root namespace of an assembly is different than the assembly name, localization doesn't work by default. To avoid this issue use [RootNamespace](xref:Microsoft.Extensions.Localization.RootNamespaceAttribute), which is described in detail [here](xref:fundamentals/localization#resource-file-naming)
 
 > [!WARNING]
 > This can occur when a project's name is not a valid .NET identifier. For instance `my-project-name.csproj` will use the root namespace `my_project_name` and the assembly name `my-project-name` leading to this error. 
@@ -102,3 +101,7 @@ When the root namespace of an assembly is different than the assembly name, loca
 ## Resources & Build Action
 
 If you use resource files for localization, it's important that they have an appropriate build action. They should be **Embedded Resource**, otherwise the `ResourceStringLocalizer` is not able to find these resources.
+
+## GitHub issues with helpful problem solving tips
+
+* [AspNetCore.Docs/issues/28674](https://github.com/dotnet/AspNetCore.Docs/issues/28674)

@@ -6,7 +6,6 @@ monikerRange: '>= aspnetcore-3.1'
 ms.author: scaddie
 ms.custom: mvc
 ms.date: 11/09/2021
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: tutorials/get-started-with-swashbuckle
 ---
 # Get started with Swashbuckle and ASP.NET Core
@@ -29,7 +28,7 @@ Swashbuckle can be added with the following approaches:
 
 * From the **Package Manager Console** window:
   * Go to **View** > **Other Windows** > **Package Manager Console**
-  * Navigate to the directory in which the *.csproj* file exists
+  * Navigate to the directory in which the `.csproj` file exists
   * Execute the following command:
 
     ```powershell
@@ -71,11 +70,13 @@ dotnet add TodoApi.csproj package Swashbuckle.AspNetCore -v 6.2.3
 
 ## Add and configure Swagger middleware
 
-Add the Swagger generator to the services collection in *Program.cs*:
+Add the Swagger generator to the services collection in `Program.cs`:
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Snippets/Program.cs" id="snippet_ServicesDefault" highlight="4":::
 
-Enable the middleware for serving the generated JSON document and the Swagger UI, also in *Program.cs*:
+The call to <xref:Microsoft.Extensions.DependencyInjection.EndpointMetadataApiExplorerServiceCollectionExtensions.AddEndpointsApiExplorer%2A> shown in the preceding example is required only for [minimal APIs](/aspnet/core/fundamentals/minimal-apis/overview). For more information, see [this StackOverflow post](https://stackoverflow.com/a/71933535).
+
+Enable the middleware for serving the generated JSON document and the Swagger UI, also in `Program.cs`:
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Program.cs" id="snippet_Middleware" highlight="3,4":::
 
@@ -93,7 +94,7 @@ The Swagger UI can be found at `https://localhost:<port>/swagger`. Explore the A
 If using directories with IIS or a reverse proxy, set the Swagger endpoint to a relative path using the `./` prefix. For example, `./swagger/v1/swagger.json`. Using `/swagger/v1/swagger.json` instructs the app to look for the JSON file at the true root of the URL (plus the route prefix, if used). For example, use `https://localhost:<port>/<route_prefix>/swagger/v1/swagger.json` instead of `https://localhost:<port>/<virtual_directory>/<route_prefix>/swagger/v1/swagger.json`.
 
 > [!NOTE]
-> By default, Swashbuckle generates and exposes Swagger JSON in version 3.0 of the specification&mdash;officially called the OpenAPI Specification. To support backwards compatibility, you can opt into exposing JSON in the 2.0 format instead. This 2.0 format is important for integrations such as Microsoft Power Apps and Microsoft Flow that currently support OpenAPI version 2.0. To opt into the 2.0 format, set the `SerializeAsV2` property in *Program.cs*:
+> By default, Swashbuckle generates and exposes Swagger JSON in version 3.0 of the specification&mdash;officially called the OpenAPI Specification. To support backwards compatibility, you can opt into exposing JSON in the 2.0 format instead. This 2.0 format is important for integrations such as Microsoft Power Apps and Microsoft Flow that currently support OpenAPI version 2.0. To opt into the 2.0 format, set the `SerializeAsV2` property in `Program.cs`:
 >
 > :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Snippets/Program.cs" id="snippet_MiddlewareJsonV2" highlight="3":::
 
@@ -105,7 +106,7 @@ Swagger provides options for documenting the object model and customizing the UI
 
 The configuration action passed to the `AddSwaggerGen` method adds information such as the author, license, and description.
 
-In *Program.cs*, import the following namespace to use the `OpenApiInfo` class:
+In `Program.cs`, import the following namespace to use the `OpenApiInfo` class:
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Program.cs" id="snippet_UsingOpenApiModels":::
 
@@ -123,29 +124,45 @@ XML comments can be enabled with the following approaches:
 
 #### [Visual Studio](#tab/visual-studio)
 
-* Right-click the project in **Solution Explorer** and select **Edit <project_name>.csproj**.
-* Manually add the highlighted lines to the *.csproj* file:
+* Right-click the project in **Solution Explorer** and select *`Edit <project_name>.csproj`*.
+* Add [GenerateDocumentationFile](/dotnet/core/project-sdk/msbuild-props#generatedocumentationfile)  to the `.csproj` file:
 
-:::code language="xml" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/SwashbuckleSample.csproj" range="9-12" highlight="1-2,4":::
+```XML
+<PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+</PropertyGroup>
+```
 
 #### [Visual Studio for Mac](#tab/visual-studio-mac)
 
 * From the *Solution Pad*, press **control** and click the project name. Navigate to **Tools** > **Edit File**.
-* Manually add the highlighted lines to the *.csproj* file:
+* Add [GenerateDocumentationFile](/dotnet/core/project-sdk/msbuild-props#generatedocumentationfile)  to the `.csproj` file:
 
-:::code language="xml" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/SwashbuckleSample.csproj" range="9-12" highlight="1-2,4":::
+```XML
+<PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+</PropertyGroup>
+```
 
 #### [Visual Studio Code](#tab/visual-studio-code)
 
-Manually add the highlighted lines to the *.csproj* file:
+Add [GenerateDocumentationFile](/dotnet/core/project-sdk/msbuild-props#generatedocumentationfile)  to the `.csproj` file:
 
-:::code language="xml" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/SwashbuckleSample.csproj" range="9-12" highlight="1-2,4":::
+```XML
+<PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+</PropertyGroup>
+```
 
 #### [.NET Core CLI](#tab/netcore-cli)
 
-Manually add the highlighted lines to the *.csproj* file:
+Add [GenerateDocumentationFile](/dotnet/core/project-sdk/msbuild-props#generatedocumentationfile)  to the `.csproj` file:
 
-:::code language="xml" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/SwashbuckleSample.csproj" range="9-12" highlight="1-2,4":::
+```XML
+<PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+</PropertyGroup>
+```
 
 ---
 
@@ -163,7 +180,7 @@ To suppress warnings only for specific members, enclose the code in [#pragma war
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Models/TodoContext.cs" id="snippet_PragmaWarningDisable" highlight="3,10":::
 
-Configure Swagger to use the XML file that's generated with the preceding instructions. For Linux or non-Windows operating systems, file names and paths can be case-sensitive. For example, a *TodoApi.XML* file is valid on Windows but not CentOS.
+Configure Swagger to use the XML file that's generated with the preceding instructions. For Linux or non-Windows operating systems, file names and paths can be case-sensitive. For example, a `TodoApi.XML` file is valid on Windows but not CentOS.
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/6.x/SwashbuckleSample/Program.cs" id="snippet_Services" highlight="22-23":::
 
@@ -243,7 +260,7 @@ To inject additional CSS stylesheets, add them to the project's *wwwroot* folder
 
 * [View or download sample code](https://github.com/dotnet/AspNetCore.Docs/tree/main/aspnetcore/tutorials/web-api-help-pages-using-swagger/samples/) ([how to download](xref:index#how-to-download-a-sample))
 * [Swagger doesn't recognize comments or attributes on records](https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1920)
-* [Microsoft Learn: Improve the developer experience of an API with Swagger documentation](/learn/modules/improve-api-developer-experience-with-swagger/)
+* [Improve the developer experience of an API with Swagger documentation](/training/modules/improve-api-developer-experience-with-swagger/)
 
 :::moniker-end
 
@@ -267,7 +284,7 @@ Swashbuckle can be added with the following approaches:
 
 * From the **Package Manager Console** window:
   * Go to **View** > **Other Windows** > **Package Manager Console**
-  * Navigate to the directory in which the *TodoApi.csproj* file exists
+  * Navigate to the directory in which the `TodoApi.csproj` file exists
   * Execute the following command:
 
     ```powershell
@@ -372,27 +389,27 @@ XML comments can be enabled with the following approaches:
 
 #### [Visual Studio](#tab/visual-studio)
 
-* Right-click the project in **Solution Explorer** and select **Edit <project_name>.csproj**.
-* Manually add the highlighted lines to the *.csproj* file:
+* Right-click the project in **Solution Explorer** and select *`Edit <project_name>.csproj`*.
+* Manually add the highlighted lines to the `.csproj` file:
 
 :::code language="xml" source="web-api-help-pages-using-swagger/samples/2.1/TodoApi.Swashbuckle/TodoApi.csproj" range="8-11" highlight="1-2,4":::
 
 #### [Visual Studio for Mac](#tab/visual-studio-mac)
 
 * From the *Solution Pad*, press **control** and click the project name. Navigate to **Tools** > **Edit File**.
-* Manually add the highlighted lines to the *.csproj* file:
+* Manually add the highlighted lines to the `.csproj` file:
 
 :::code language="xml" source="web-api-help-pages-using-swagger/samples/2.1/TodoApi.Swashbuckle/TodoApi.csproj" range="8-11" highlight="1-2,4":::
 
 #### [Visual Studio Code](#tab/visual-studio-code)
 
-Manually add the highlighted lines to the *.csproj* file:
+Manually add the highlighted lines to the `.csproj` file:
 
 :::code language="xml" source="web-api-help-pages-using-swagger/samples/2.1/TodoApi.Swashbuckle/TodoApi.csproj" range="8-11" highlight="1-2,4":::
 
 #### [.NET Core CLI](#tab/netcore-cli)
 
-Manually add the highlighted lines to the *.csproj* file:
+Manually add the highlighted lines to the `.csproj` file:
 
 :::code language="xml" source="web-api-help-pages-using-swagger/samples/2.1/TodoApi.Swashbuckle/TodoApi.csproj" range="8-11" highlight="1-2,4":::
 
@@ -428,7 +445,7 @@ namespace TodoApi
 }
 ```
 
-Configure Swagger to use the XML file that's generated with the preceding instructions. For Linux or non-Windows operating systems, file names and paths can be case-sensitive. For example, a *TodoApi.XML* file is valid on Windows but not CentOS.
+Configure Swagger to use the XML file that's generated with the preceding instructions. For Linux or non-Windows operating systems, file names and paths can be case-sensitive. For example, a `TodoApi.XML` file is valid on Windows but not CentOS.
 
 :::code language="csharp" source="web-api-help-pages-using-swagger/samples/3.x/TodoApi.Swashbuckle/Startup.cs" id="snippet_ConfigureServices" highlight="30-32":::
 
@@ -566,6 +583,6 @@ app.UseSwaggerUI(c =>
 
 ## Additional resources
 
-* [Microsoft Learn: Improve the developer experience of an API with Swagger documentation](/learn/modules/improve-api-developer-experience-with-swagger/)
+* [Improve the developer experience of an API with Swagger documentation](/training/modules/improve-api-developer-experience-with-swagger/)
 
 :::moniker-end

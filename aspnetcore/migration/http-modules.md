@@ -4,7 +4,6 @@ description: Migrate HTTP handlers and modules to ASP.NET Core middleware
 author: rick-anderson
 ms.author: riande
 ms.date: 12/07/2016
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: migration/http-modules
 ---
 # Migrate HTTP handlers and modules to ASP.NET Core middleware
@@ -19,7 +18,7 @@ Before proceeding to ASP.NET Core middleware, let's first recap how HTTP modules
 
 **Handlers are:**
 
-* Classes that implement [IHttpHandler](/dotnet/api/system.web.ihttphandler)
+* Classes that implement <xref:System.Web.IHttpHandler>
 
 * Used to handle requests with a given file name or extension, such as *.report*
 
@@ -27,7 +26,7 @@ Before proceeding to ASP.NET Core middleware, let's first recap how HTTP modules
 
 **Modules are:**
 
-* Classes that implement [IHttpModule](/dotnet/api/system.web.ihttpmodule)
+* Classes that implement <xref:System.Web.IHttpModule>
 
 * Invoked for every request
 
@@ -43,13 +42,13 @@ Before proceeding to ASP.NET Core middleware, let's first recap how HTTP modules
 
 2. For the same event, the order in which they're configured in *Web.config*.
 
-In addition to modules, you can add handlers for the life cycle events to your *Global.asax.cs* file. These handlers run after the handlers in the configured modules.
+In addition to modules, you can add handlers for the life cycle events to your `Global.asax.cs` file. These handlers run after the handlers in the configured modules.
 
 ## From handlers and modules to middleware
 
 **Middleware are simpler than HTTP modules and handlers:**
 
-* Modules, handlers, *Global.asax.cs*, *Web.config* (except for IIS configuration) and the application life cycle are gone
+* Modules, handlers, `Global.asax.cs`, *Web.config* (except for IIS configuration) and the application life cycle are gone
 
 * The roles of both modules and handlers have been taken over by middleware
 
@@ -62,7 +61,7 @@ In addition to modules, you can add handlers for the life cycle events to your *
 :::moniker-end
 :::moniker range="< aspnetcore-3.0"
 
-* [Pipeline branching](xref:fundamentals/middleware/index#use-run-and-map) lets you send requests to specific middleware, based on not only the URL but also on request headers, query strings, etc.
+* [Pipeline branching](xref:fundamentals/middleware/index#branch-the-middleware-pipeline) lets you send requests to specific middleware, based on not only the URL but also on request headers, query strings, etc.
 
 :::moniker-end
 
@@ -178,7 +177,7 @@ The new [configuration system](xref:fundamentals/configuration/index) gives you 
 
 2. Store the option values
 
-   The configuration system allows you to store option values anywhere you want. However, most sites use *appsettings.json*, so we'll take that approach:
+   The configuration system allows you to store option values anywhere you want. However, most sites use `appsettings.json`, so we'll take that approach:
 
    [!code-json[](http-modules/sample/Asp.Net.Core/appsettings.json?range=1,14-18)]
 
@@ -190,7 +189,7 @@ The new [configuration system](xref:fundamentals/configuration/index) gives you 
 
     Update your `Startup` class:
 
-   1. If you're using *appsettings.json*, add it to the configuration builder in the `Startup` constructor:
+   1. If you're using `appsettings.json`, add it to the configuration builder in the `Startup` constructor:
 
       [!code-csharp[](../migration/http-modules/sample/Asp.Net.Core/Startup.cs?name=snippet_Ctor&highlight=5-6)]
 
@@ -218,9 +217,9 @@ This breaks down though if you want to use the same middleware twice, with diffe
 
 The solution is to get the options objects with the actual options values in your `Startup` class and pass those directly to each instance of your middleware.
 
-1. Add a second key to *appsettings.json*
+1. Add a second key to `appsettings.json`
 
-   To add a second set of options to the *appsettings.json* file, use a new key to uniquely identify it:
+   To add a second set of options to the `appsettings.json` file, use a new key to uniquely identify it:
 
    [!code-json[](http-modules/sample/Asp.Net.Core/appsettings.json?range=1,10-18&highlight=2-5)]
 
@@ -242,7 +241,7 @@ You saw earlier that the `Invoke` method in your middleware takes a parameter of
 public async Task Invoke(HttpContext context)
 ```
 
-`HttpContext` has significantly changed in ASP.NET Core. This section shows how to translate the most commonly used properties of [System.Web.HttpContext](/dotnet/api/system.web.httpcontext) to the new `Microsoft.AspNetCore.Http.HttpContext`.
+`HttpContext` has significantly changed in ASP.NET Core. This section shows how to translate the most commonly used properties of <xref:System.Web.HttpContext?displayProperty=fullName> to the new `Microsoft.AspNetCore.Http.HttpContext`.
 
 ### HttpContext
 

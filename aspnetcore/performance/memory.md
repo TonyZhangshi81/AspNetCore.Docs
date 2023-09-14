@@ -5,7 +5,6 @@ description: Learn how memory is managed in ASP.NET Core and how the garbage col
 ms.author: riande
 ms.custom: mvc
 ms.date: 4/05/2019
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: performance/memory
 ---
 
@@ -31,21 +30,19 @@ When an ASP.NET Core app starts, the GC:
 
 The preceding memory allocations are done for performance reasons. The performance benefit comes from heap segments in contiguous memory.
 
-### Call GC.Collect
+### GC.Collect caveats 
 
-Calling [GC.Collect](xref:System.GC.Collect*) explicitly:
+In general, ASP.NET Core apps in production should **not** use [GC.Collect](xref:System.GC.Collect%2A) explicitly. Inducing garbage collections at sub-optimal times can decrease performance significantly.
 
-* Should **not** be done by production ASP.NET Core apps.
-* Is useful when investigating memory leaks.
-* When investigating, verifies the GC has removed all dangling objects from memory so memory can be measured.
+GC.Collect is useful when investigating memory leaks. Calling `GC.Collect()` triggers a blocking garbage collection cycle that tries to reclaim all objects inaccessible from managed code. It's a useful way to understand the size of the reachable live objects in the heap, and track growth of memory size over time.
 
 ## Analyzing the memory usage of an app
 
 Dedicated tools can help analyzing memory usage:
 
-- Counting object references
-- Measuring how much impact the GC has on CPU usage
-- Measuring memory space used for each generation
+* Counting object references
+* Measuring how much impact the GC has on CPU usage
+* Measuring memory space used for each generation
 
 Use the following tools to analyze memory usage:
 
@@ -73,12 +70,12 @@ The [MemoryLeak sample app](https://github.com/sebastienros/memoryleak) is avail
 
 Run MemoryLeak. Allocated memory slowly increases until a GC occurs. Memory increases because the tool allocates custom object to capture data. The following image shows the MemoryLeak Index page when a Gen 0 GC occurs. The chart shows 0 RPS (Requests per second) because no API endpoints from the API controller have been called.
 
-![preceding chart](memory/_static/0RPS.png)
+:::image source="memory/_static/0RPS.png" alt-text="Chart showing 0 Requests Per Second (RPS)":::
 
 The chart displays two values for the memory usage:
 
-- Allocated: the amount of memory occupied by managed objects
-- [Working set](/windows/win32/memory/working-set): The set of pages in the virtual address space of the process that are currently resident in physical memory. The working set shown is the same value Task Manager displays.
+* Allocated: the amount of memory occupied by managed objects
+* [Working set](/windows/win32/memory/working-set): The set of pages in the virtual address space of the process that are currently resident in physical memory. The working set shown is the same value Task Manager displays.
 
 ### Transient objects
 
@@ -94,7 +91,7 @@ public ActionResult<string> GetBigString()
 
 The following graph is generated with a relatively small load in to show how memory allocations are impacted by the GC.
 
-![preceding chart](memory/_static/bigstring.png)
+:::image source="memory/_static/bigstring.png" alt-text="Graph showing memory allocations for a relatively small load":::
 
 The preceding chart shows:
 
@@ -106,7 +103,7 @@ The preceding chart shows:
 
 The following chart is taken at the max throughput that can be handled by the machine.
 
-![preceding chart](memory/_static/bigstring2.png)
+:::image source="memory/_static/bigstring2.png" alt-text="Chart showing max throughput":::
 
 The preceding chart shows:
 
@@ -125,7 +122,7 @@ The .NET Garbage Collector has two different modes:
 * **Workstation GC**: Optimized for the desktop.
 * **Server GC**. The default GC for ASP.NET Core apps. Optimized for the server.
 
-The GC mode can be set explicitly in the project file or in the *runtimeconfig.json* file of the published app. The following markup shows setting `ServerGarbageCollection` in the project file:
+The GC mode can be set explicitly in the project file or in the `runtimeconfig.json` file of the published app. The following markup shows setting `ServerGarbageCollection` in the project file:
 
 ```xml
 <PropertyGroup>
@@ -139,13 +136,13 @@ Changing `ServerGarbageCollection` in the project file requires the app to be re
 
 The following image shows the memory profile under a 5K RPS using the Workstation GC.
 
-![preceding chart](memory/_static/workstation.png)
+:::image source="memory/_static/workstation.png" alt-text="Chart showing memory profile for a Workstation GC":::
 
 The differences between this chart and the server version are significant:
 
-- The working set drops from 500 MB to 70 MB.
-- The GC does generation 0 collections multiple times per second instead of every two seconds.
-- GC drops from 300 MB to 10 MB.
+* The working set drops from 500 MB to 70 MB.
+* The GC does generation 0 collections multiple times per second instead of every two seconds.
+* GC drops from 300 MB to 10 MB.
 
 On a typical web server environment, CPU usage is more important than memory, therefore the Server GC is better. If memory utilization is high and CPU usage is relatively low, the Workstation GC might be more performant. For example, high density hosting several web apps where memory is scarce.
 
@@ -153,7 +150,7 @@ On a typical web server environment, CPU usage is more important than memory, th
 
 ### GC using Docker and small containers
 
-When multiple containerized apps are running on one machine, Workstation GC might be more preformant than Server GC. For more information, see [Running with Server GC in a Small Container](https://devblogs.microsoft.com/dotnet/running-with-server-gc-in-a-small-container-scenario-part-0/) and [Running with Server GC in a Small Container Scenario Part 1 – Hard Limit for the GC Heap](https://devblogs.microsoft.com/dotnet/running-with-server-gc-in-a-small-container-scenario-part-1-hard-limit-for-the-gc-heap/).
+When multiple containerized apps are running on one machine, Workstation GC might be more performant than Server GC. For more information, see [Running with Server GC in a Small Container](https://devblogs.microsoft.com/dotnet/running-with-server-gc-in-a-small-container-scenario-part-0/) and [Running with Server GC in a Small Container Scenario Part 1 – Hard Limit for the GC Heap](https://devblogs.microsoft.com/dotnet/running-with-server-gc-in-a-small-container-scenario-part-1-hard-limit-for-the-gc-heap/).
 
 ### Persistent object references
 
@@ -176,9 +173,9 @@ public ActionResult<string> GetStaticString()
 The preceding code:
 
 * Is an example of a typical memory leak.
-* With frequent calls, causes app memory to increases until the process crashes with an `OutOfMemory` exception.
+* With frequent calls, causes app memory to increase until the process crashes with an `OutOfMemory` exception.
 
-![preceding chart](memory/_static/eternal.png)
+:::image source="memory/_static/eternal.png" alt-text="Chart showing a memory leak":::
 
 In the preceding image:
 
@@ -192,7 +189,7 @@ Some scenarios, such as caching, require object references to be held until memo
 
 Some .NET Core objects rely on native memory. Native memory can **not** be collected by the GC. The .NET object using native memory must free it using native code.
 
-.NET provides the <xref:System.IDisposable> interface to let developers release native memory. Even if <xref:System.IDisposable.Dispose*> is not called, correctly implemented classes call `Dispose` when the [finalizer](/dotnet/csharp/programming-guide/classes-and-structs/destructors) runs.
+.NET provides the <xref:System.IDisposable> interface to let developers release native memory. Even if <xref:System.IDisposable.Dispose%2A> is not called, correctly implemented classes call `Dispose` when the [finalizer](/dotnet/csharp/programming-guide/classes-and-structs/destructors) runs.
 
 Consider the following code:
 
@@ -205,22 +202,22 @@ public void GetFileProvider()
 }
 ```
 
-[PhysicalFileProvider](/dotnet/api/microsoft.extensions.fileproviders.physicalfileprovider?view=dotnet-plat-ext-3.0) is a managed class, so any instance will be collected at the end of the request.
+<xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider> is a managed class, so any instance will be collected at the end of the request.
 
 The following image shows the memory profile while invoking the `fileprovider` API continuously.
 
-![preceding chart](memory/_static/fileprovider.png)
+:::image source="memory/_static/fileprovider.png" alt-text="Chart showing a native memory leak":::
 
 The preceding chart shows an obvious issue with the implementation of this class, as it keeps increasing memory usage. This is a known problem that is being tracked in [this issue](https://github.com/dotnet/aspnetcore/issues/3110).
 
-The same leak could be happen in user code, by one of the following:
+The same leak could happen in user code, by one of the following:
 
 * Not releasing the class correctly.
-* Forgetting to invoke the `Dispose`method of the dependent objects that should be disposed.
+* Forgetting to invoke the `Dispose` method of the dependent objects that should be disposed.
 
-### Large objects heap
+### Large object heap
 
-Frequent memory allocation/free cycles can fragment memory, especially when allocating large chunks of memory. Objects are allocated in contiguous blocks of memory. To mitigate fragmentation, when the GC frees memory, it tries to defragment it. This process is called **compaction**. Compaction involves moving objects. Moving large objects imposes a performance penalty. For this reason the GC creates a special memory zone for _large_ objects, called the [large object heap](/dotnet/standard/garbage-collection/large-object-heap) (LOH). Objects that are greater than 85,000 bytes (approximately 83 KB) are:
+Frequent memory allocation/free cycles can fragment memory, especially when allocating large chunks of memory. Objects are allocated in contiguous blocks of memory. To mitigate fragmentation, when the GC frees memory, it tries to defragment it. This process is called **compaction**. Compaction involves moving objects. Moving large objects imposes a performance penalty. For this reason the GC creates a special memory zone for *large* objects, called the [large object heap](/dotnet/standard/garbage-collection/large-object-heap) (LOH). Objects that are greater than 85,000 bytes (approximately 83 KB) are:
 
 * Placed on the LOH.
 * Not compacted.
@@ -254,11 +251,11 @@ public int GetLOH1(int size)
 
 The following chart shows the memory profile of calling the `/api/loh/84975` endpoint, under maximum load:
 
-![preceding chart](memory/_static/loh1.png)
+:::image source="memory/_static/loh1.png" alt-text="Chart showing memory profile of allocating bytes":::
 
 The following chart shows the memory profile of calling the `/api/loh/84976` endpoint, allocating *just one more byte*:
 
-![preceding chart](memory/_static/loh2.png)
+:::image source="memory/_static/loh2.png" alt-text="Chart showing memory profile of allocating one more byte":::
 
 Note: The `byte[]` structure has overhead bytes. That's why 84,976 bytes triggers the 85,000 limit.
 
@@ -289,7 +286,7 @@ Incorrectly using <xref:System.Net.Http.HttpClient> can result in a resource lea
 * Are more scarce than memory.
 * Are more problematic when leaked than memory.
 
-Experienced .NET developers know to call <xref:System.IDisposable.Dispose*> on objects that implement <xref:System.IDisposable>. Not disposing objects that implement `IDisposable` typically results in leaked memory or leaked system resources.
+Experienced .NET developers know to call <xref:System.IDisposable.Dispose%2A> on objects that implement <xref:System.IDisposable>. Not disposing objects that implement `IDisposable` typically results in leaked memory or leaked system resources.
 
 `HttpClient` implements `IDisposable`, but should **not** be disposed on every invocation. Rather, `HttpClient` should be reused.
 
@@ -321,7 +318,7 @@ System.Net.Http.HttpRequestException: Only one usage of each socket address
     CancellationToken cancellationToken)
 ```
 
-Even though the `HttpClient` instances are disposed, the actual network connection takes some time to be released by the operating system. By continuously creating new connections, _ports exhaustion_ occurs. Each client connection requires its own client port.
+Even though the `HttpClient` instances are disposed, the actual network connection takes some time to be released by the operating system. By continuously creating new connections, *ports exhaustion* occurs. Each client connection requires its own client port.
 
 One way to prevent port exhaustion is to reuse the same `HttpClient` instance:
 
@@ -372,11 +369,11 @@ The following API endpoint instantiates a `byte` buffer that is filled with rand
 
 The following chart display calling the preceding API with moderate load:
 
-![preceding chart](memory/_static/array.png)
+:::image source="memory/_static/array.png" alt-text="Chart showing calls to API with moderate load":::
 
 In the preceding chart, generation 0 collections happen approximately once per second.
 
-The preceding code can be optimized by pooling the `byte` buffer by using [ArrayPool\<T>](xref:System.Buffers.ArrayPool`1). A static instance is reused across requests.
+The preceding code can be optimized by pooling the `byte` buffer by using [ArrayPool\<T>](xref:System.Buffers.ArrayPool%601). A static instance is reused across requests.
 
 What's different with this approach is that a pooled object is returned from the API. That means:
 
@@ -386,9 +383,9 @@ What's different with this approach is that a pooled object is returned from the
 To set up disposal of the object:
 
 * Encapsulate the pooled array in a disposable object.
-* Register the pooled object with [HttpContext.Response.RegisterForDispose](xref:Microsoft.AspNetCore.Http.HttpResponse.RegisterForDispose*).
+* Register the pooled object with [HttpContext.Response.RegisterForDispose](xref:Microsoft.AspNetCore.Http.HttpResponse.RegisterForDispose%2A).
 
-`RegisterForDispose` will take care of calling `Dispose`on the target object so that it's only released when the HTTP request is complete.
+`RegisterForDispose` will take care of calling `Dispose` on the target object so that it's only released when the HTTP request is complete.
 
 ```csharp
 private static ArrayPool<byte> _arrayPool = ArrayPool<byte>.Create();
@@ -424,7 +421,7 @@ public byte[] GetPooledArray(int size)
 
 Applying the same load as the non-pooled version results in the following chart:
 
-![preceding chart](memory/_static/pooledarray.png)
+:::image source="memory/_static/pooledarray.png" alt-text="Chart showing fewer allocations":::
 
 The main difference is allocated bytes, and as a consequence much fewer generation 0 collections.
 

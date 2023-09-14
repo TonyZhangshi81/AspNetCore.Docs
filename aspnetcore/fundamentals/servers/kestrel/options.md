@@ -1,19 +1,18 @@
 ---
 title: Configure options for the ASP.NET Core Kestrel web server
-author: rick-anderson
+author: tdykstra
 description: Learn about configuring options for Kestrel, the cross-platform web server for ASP.NET Core.
 monikerRange: '>= aspnetcore-5.0'
 ms.author: riande
 ms.custom: mvc
-ms.date: 01/20/2022
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
+ms.date: 01/26/2023
 uid: fundamentals/servers/kestrel/options
 ---
 # Configure options for the ASP.NET Core Kestrel web server
 
 :::moniker range=">= aspnetcore-6.0"
 
-The Kestrel web server has constraint configuration options that are especially useful in Internet-facing deployments. To configure Kestrel configuration options, call <xref:Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.ConfigureKestrel%2A> in *Program.cs*:
+The Kestrel web server has constraint configuration options that are especially useful in Internet-facing deployments. To configure Kestrel configuration options, call <xref:Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.ConfigureKestrel%2A> in `Program.cs`:
 
 :::code language="csharp" source="samples/6.x/KestrelSample/Snippets/Program.cs" id="snippet_ConfigureKestrel":::
 
@@ -42,9 +41,11 @@ By default, Kestrel configuration is loaded from the `Kestrel` section using a p
 
 ### Keep-alive timeout
 
-<xref:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.KeepAliveTimeout> gets or sets the [keep-alive timeout](https://tools.ietf.org/html/rfc7230#section-6.5):
+<xref:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.KeepAliveTimeout> gets or sets the [keep-alive timeout](https://www.rfc-editor.org/rfc/rfc9112.html#name-keep-alive-connections):
 
 :::code language="csharp" source="samples/6.x/KestrelSample/Snippets/Program.cs" id="snippet_ConfigureKestrelLimitsKeepAliveTimeout" highlight="3":::
+
+This timeout is not enforced when a debugger is attached to the Kestrel process.
 
 ### Maximum client connections
 
@@ -101,6 +102,8 @@ Server-wide rate limits configured via <xref:Microsoft.AspNetCore.Server.Kestrel
 <xref:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.RequestHeadersTimeout> gets or sets the maximum amount of time the server spends receiving request headers:
 
 :::code language="csharp" source="samples/6.x/KestrelSample/Snippets/Program.cs" id="snippet_ConfigureKestrelLimitsRequestHeadersTimeout" highlight="3":::
+
+This timeout is not enforced when a debugger is attached to the Kestrel process.
 
 ## HTTP/2 limits
 
@@ -181,6 +184,10 @@ For information about other Kestrel options and limits, see:
 * <xref:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits>
 * <xref:Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>
     
+## Behavior with debugger attached
+
+Certain timeouts and rate limits aren't enforced when a debugger is attached to a Kestrel process. For more information, see [Behavior with debugger attached](xref:fundamentals/servers/kestrel#behavior-with-debugger-attached).
+
 :::moniker-end
 
 :::moniker range="< aspnetcore-6.0"
@@ -287,7 +294,7 @@ Both of the preceding approaches work with any [configuration provider](xref:fun
 
 <xref:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.KeepAliveTimeout>
 
-Gets or sets the [keep-alive timeout](https://tools.ietf.org/html/rfc7230#section-6.5). Defaults to 2 minutes.
+Gets or sets the [keep-alive timeout](https://www.rfc-editor.org/rfc/rfc9112.html#name-keep-alive-connections). Defaults to 2 minutes.
 
 :::code language="csharp" source="samples/5.x/KestrelSample/Program.cs" id="snippet_Limits" highlight="19-20":::
 

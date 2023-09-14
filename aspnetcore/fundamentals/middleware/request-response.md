@@ -1,12 +1,11 @@
 ---
 title: Request and Response operations in ASP.NET Core
-author: jkotalik
+author: rick-anderson
 description: Learn how to read the request body and write the response body in ASP.NET Core.
 monikerRange: '>= aspnetcore-3.0'
-ms.author: jukotali
+ms.author: riande
 ms.custom: mvc
 ms.date: 5/29/2019
-no-loc: [Home, Privacy, Kestrel, appsettings.json, "ASP.NET Core Identity", cookie, Cookie, Blazor, "Blazor Server", "Blazor WebAssembly", "Identity", "Let's Encrypt", Razor, SignalR]
 uid: fundamentals/middleware/request-response
 ---
 # Request and response operations in ASP.NET Core
